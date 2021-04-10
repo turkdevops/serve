@@ -25,7 +25,7 @@
   "devDependencies": {
     "@zeit/eslint-config-node": "0.3.0",
     "@zeit/git-hooks": "0.1.4",
-    "eslint": "5.4.0"
+    "eslint": "5.16.0"
   },
   "eslintConfig": {
     "extends": [
