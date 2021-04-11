@@ -77,13 +77,15 @@ const getHelp = () => chalk`
       -l, --listen {underline listen_uri}             Specify a URI endpoint on which to listen (see below) -
                                           more than one may be specified to listen in multiple places
 
+      -p                                  Specify custom port
+
       -d, --debug                         Show debugging information
 
       -s, --single                        Rewrite all not-found requests to \`index.html\`
 
       -c, --config                        Specify custom path to \`serve.json\`
 
-      -C, --cors						  Enable CORS, sets \`Access-Control-Allow-Origin\` to \`*\`
+      -C, --cors                          Enable CORS, sets \`Access-Control-Allow-Origin\` to \`*\`
 
       -n, --no-clipboard                  Do not copy the local address to the clipboard
 
@@ -96,6 +98,8 @@ const getHelp = () => chalk`
       --ssl-cert                          Optional path to an SSL/TLS certificate to serve with HTTPS
 
       --ssl-key                           Optional path to the SSL/TLS certificate\'s private key
+
+      --no-port-switching                 Do not open a port other than the one specified when it\'s taken.
 
   {bold ENDPOINTS}
 
@@ -204,7 +208,7 @@ const startEndpoint = (endpoint, config, args, previous) => {
 		: http.createServer(serverHandler);
 
 	server.on('error', (err) => {
-		if (err.code === 'EADDRINUSE' && endpoint.length === 1 && !isNaN(endpoint[0])) {
+		if (err.code === 'EADDRINUSE' && endpoint.length === 1 && !isNaN(endpoint[0]) && args['--no-port-switching'] !== true) {
 			startEndpoint([0], config, args, endpoint[0]);
 			return;
 		}
@@ -227,7 +231,7 @@ const startEndpoint = (endpoint, config, args, previous) => {
 			const ip = getNetworkAddress();
 
 			localAddress = `${httpMode}://${address}:${details.port}`;
-			networkAddress = `${httpMode}://${ip}:${details.port}`;
+			networkAddress = networkAddress ? `${httpMode}://${ip}:${details.port}` : null;
 		}
 
 		if (isTTY && process.env.NODE_ENV !== 'production') {
@@ -372,6 +376,7 @@ const loadConfig = async (cwd, entry, args) => {
 			'--no-etag': Boolean,
 			'--symlinks': Boolean,
 			'--cors': Boolean,
+			'--no-port-switching': Boolean,
 			'--ssl-cert': String,
 			'--ssl-key': String,
 			'-h': '--help',
